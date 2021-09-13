@@ -456,7 +456,7 @@ async function handleIssueComment(
   if (cmd.workflow_name_format) {
     try {
       const pullData = await helper.getPull(repo, issueNumber)
-      const ref: string = pullData.head.sha
+      const ref: string = pullData.head.ref
       const workflowName = formatWithArguments(cmd.workflow_name_format, args)
       const triggerDate = Date.now()
       await helper.createWorkflowDispatch(repo, workflowName, ref)
