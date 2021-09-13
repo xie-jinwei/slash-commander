@@ -463,13 +463,14 @@ async function handleIssueComment(
       core.info(`workflow with name ${workflowName} is ${workflow}`)
       const triggerDate = Date.now()
       await helper.createWorkflowDispatch(repo, workflow.id, ref)
-      const workflowRunId = await helper.getWorkflowRunId(
+      const workflowRun = await helper.waitUntilWorkflowRunAfterTimeFound(
         repo,
         workflow.id,
         'workflow_dispatch',
-        triggerDate
+        triggerDate,
+        2,
+        30
       )
-      const workflowRun = await helper.getWorkflowRun(repo, workflowRunId)
       commentBody = await helper.suffixComment(
         repo,
         commentId,

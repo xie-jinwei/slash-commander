@@ -3,6 +3,7 @@ import * as github from '@actions/github'
 import * as core from '@actions/core'
 import {inspect} from 'util'
 import {RestEndpointMethodTypes} from '@octokit/plugin-rest-endpoint-methods'
+import { isTimeout, sleep } from './utils'
 
 export declare const GitHub: typeof Octokit &
   import('@octokit/core/dist-types/types').Constructor<
@@ -485,12 +486,32 @@ export class GitHubHelper {
     }
   }
 
-  async getWorkflowRunId(
+  async waitUntilWorkflowRunAfterTimeFound(
+    repo: Repository,
+    workflowId: number,
+    event: string,
+    createdAt: number,
+    interval: number,
+    timeout: number
+  ): Promise<WorkflowRunData> {
+    const start = Date.now()
+    let run: WorkflowRunData
+    do {
+      core.debug(`sleep ${interval} seconds before next workflow run search`)
+      await sleep(interval)
+      try {
+        run = await this.getWorkflowRunAfterTime(repo, workflowId, event, createdAt)
+      } catch (error) {}
+    } while (!run && !isTimeout(start, timeout))
+    return run
+  }
+
+  async getWorkflowRunAfterTime(
     repo: Repository,
     workflowId: number,
     event: string,
     createdAt: number
-  ): Promise<number> {
+  ): Promise<WorkflowRunData> {
     try {
       core.debug('Get workflow run id')
       const resp = await this.octokit.rest.actions.listWorkflowRuns({
@@ -526,7 +547,7 @@ export class GitHubHelper {
         throw new Error('No workflow run found')
       }
 
-      return runs[0].id
+      return runs[0]
     } catch (error) {
       core.debug(error)
       core.warning(
@@ -538,7 +559,7 @@ export class GitHubHelper {
     }
   }
 
-  async getWorkflowRun(
+  async getWorkflowRunWithId(
     repo: Repository,
     runId: number
   ): Promise<WorkflowRunData> {

@@ -105,6 +105,7 @@ exports.GitHubHelper = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const core = __importStar(__nccwpck_require__(2186));
 const util_1 = __nccwpck_require__(1669);
+const utils_1 = __nccwpck_require__(918);
 class GitHubHelper {
     constructor(token) {
         this.octokit = github.getOctokit(token);
@@ -393,7 +394,22 @@ class GitHubHelper {
             }
         });
     }
-    getWorkflowRunId(repo, workflowId, event, createdAt) {
+    waitUntilWorkflowRunAfterTimeFound(repo, workflowId, event, createdAt, interval, timeout) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const start = Date.now();
+            let run;
+            do {
+                core.debug(`sleep ${interval} seconds before next workflow run search`);
+                yield utils_1.sleep(interval);
+                try {
+                    run = yield this.getWorkflowRunAfterTime(repo, workflowId, event, createdAt);
+                }
+                catch (error) { }
+            } while (!run && !utils_1.isTimeout(start, timeout));
+            return run;
+        });
+    }
+    getWorkflowRunAfterTime(repo, workflowId, event, createdAt) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 core.debug('Get workflow run id');
@@ -411,7 +427,7 @@ class GitHubHelper {
                 if (runs.length == 0) {
                     throw new Error('No workflow run found');
                 }
-                return runs[0].id;
+                return runs[0];
             }
             catch (error) {
                 core.debug(error);
@@ -420,7 +436,7 @@ class GitHubHelper {
             }
         });
     }
-    getWorkflowRun(repo, runId) {
+    getWorkflowRunWithId(repo, runId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const resp = yield this.octokit.rest.actions.getWorkflowRun(Object.assign(Object.assign({}, repo), { run_id: runId }));
@@ -860,8 +876,7 @@ function handleIssueComment(token, commandsConfig) {
                 core.info(`workflow with name ${workflowName} is ${workflow}`);
                 const triggerDate = Date.now();
                 yield helper.createWorkflowDispatch(repo, workflow.id, ref);
-                const workflowRunId = yield helper.getWorkflowRunId(repo, workflow.id, 'workflow_dispatch', triggerDate);
-                const workflowRun = yield helper.getWorkflowRun(repo, workflowRunId);
+                const workflowRun = yield helper.waitUntilWorkflowRunAfterTimeFound(repo, workflow.id, 'workflow_dispatch', triggerDate, 2, 30);
                 commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>Workflow run started: name = ${workflowName}, ref = ${ref}\n>View workflow run at: ${workflowRun.html_url}`);
                 yield helper.createCommitStatus(repo, pullData.head.sha, workflowName, 'pending', `Workflow run was triggered by slash command in comment ${commentId}`, workflowRun.html_url);
             }
@@ -998,6 +1013,25 @@ function configIsValid(config) {
     return true;
 }
 exports.configIsValid = configIsValid;
+
+
+/***/ }),
+
+/***/ 918:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isTimeout = exports.sleep = void 0;
+function sleep(seconds) {
+    return new Promise(resolve => setTimeout(resolve, seconds * 1000, {}));
+}
+exports.sleep = sleep;
+function isTimeout(start, timeoutSeconds) {
+    return Date.now() > start + timeoutSeconds * 1000;
+}
+exports.isTimeout = isTimeout;
 
 
 /***/ }),
