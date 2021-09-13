@@ -163,7 +163,7 @@ async function handleIssueComment(
 
   // handle /help commands specially
   if (commandTokens[0] === 'help') {
-    let helpMessage = '\n> Command | Description\n> --- | ---\n'
+    let helpMessage = '\n> Command | Description\n> --- | ---\n>/help | Show this help message in comment\n'
     const commandMatches = commandsConfig.commands.filter(function (
       cmd: Command
     ) {
@@ -400,6 +400,8 @@ async function handleIssueComment(
     if (cmd.replace_issue_body_format) {
       body = formatWithArguments(cmd.replace_issue_body_format, args)
     }
+    title = title.trim()
+    body = body.trim()
     await helper.updateIssue(repo, issueNumber, title, body)
     commentBody = await helper.suffixComment(
       repo,

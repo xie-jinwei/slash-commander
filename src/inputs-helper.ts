@@ -96,7 +96,7 @@ export function configIsValid(config: CommandsConfig): boolean {
       core.setFailed(`command name is empty`)
       return false
     }
-    if (cmd.usage === '') {
+    if (cmd.usage === null) {
       core.setFailed(`command usage is empty`)
       return false
     }
