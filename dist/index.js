@@ -818,12 +818,12 @@ function handleIssueComment(token, commandsConfig) {
                     throw error;
                 }
             }
-            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): updated issue '${issueNumber}'`);
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): updated issue '#${issueNumber}'`);
         }
         if (cmd.workflow_name_format) {
             try {
                 const pullData = yield helper.getPull(repo, issueNumber);
-                const ref = pullData.head.ref;
+                const ref = pullData.head.sha;
                 const workflowName = commands_helper_1.formatWithArguments(cmd.workflow_name_format, args);
                 const triggerDate = Date.now();
                 yield helper.createWorkflowDispatch(repo, workflowName, ref);
