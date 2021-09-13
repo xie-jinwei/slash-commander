@@ -136,16 +136,16 @@ export class GitHubHelper {
         labels: [label]
       })
       core.debug(
-        `Response for adding label on issue ${issueNumber}: ${inspect(resp)}`
+        `Response for adding label ${label} on issue ${issueNumber}: ${inspect(resp)}`
       )
       if (resp.status !== 200) {
         throw new Error(
-          `Response status for adding label on issue ${issueNumber}: ${resp.status}`
+          `Response status for adding ${label} label on issue ${issueNumber}: ${resp.status}`
         )
       }
     } catch (error) {
       core.debug(error)
-      core.warning(`Failed for adding label on issue ${issueNumber}`)
+      core.warning(`Failed for adding ${label} label on issue ${issueNumber}`)
       throw error
     }
   }
@@ -162,16 +162,16 @@ export class GitHubHelper {
         name: label
       })
       core.debug(
-        `Response for removing label on issue ${issueNumber}: ${inspect(resp)}`
+        `Response for removing ${label} label on issue ${issueNumber}: ${inspect(resp)}`
       )
       if (resp.status !== 200) {
         throw new Error(
-          `Response status for removing label on issue ${issueNumber}: ${resp.status}`
+          `Response status for removing ${label} label on issue ${issueNumber}: ${resp.status}`
         )
       }
     } catch (error) {
       core.debug(error)
-      core.warning(`Failed for removing label on issue ${issueNumber}`)
+      core.warning(`Failed for removing ${label} label on issue ${issueNumber}`)
       throw error
     }
   }
