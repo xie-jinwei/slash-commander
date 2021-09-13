@@ -31,6 +31,12 @@ export type WorkflowRunData =
 export type CombinedStatusData =
   RestEndpointMethodTypes['repos']['getCombinedStatusForRef']['response']['data']
 
+export type WorkflowData = 
+  RestEndpointMethodTypes['actions']['listRepoWorkflows']['response']['data']['workflows'][number]
+
+export type ListWorkflowData = 
+  RestEndpointMethodTypes['actions']['listRepoWorkflows']['response']['data']
+
 export class GitHubHelper {
   private octokit: InstanceType<typeof GitHub>
 
@@ -415,7 +421,7 @@ export class GitHubHelper {
 
   async createWorkflowDispatch(
     repo: Repository,
-    workflowId: string,
+    workflowId: number,
     ref: string
   ): Promise<void> {
     try {
@@ -443,9 +449,45 @@ export class GitHubHelper {
     }
   }
 
+  async getWorkflowWithName(
+    repo: Repository,
+    name: string
+  ): Promise<WorkflowData> {
+    const workflowList = await this.getWorkflows(repo)
+    const workflowsFiltered = workflowList.workflows.filter(w => w.name === name)
+    if (workflowsFiltered.length === 0) {
+      throw new Error(`Cannot find any workflows with name '${name}'`)
+    }
+    if (workflowsFiltered.length > 1) {
+      throw new Error(`Found more than 1 (actually ${workflowsFiltered.length}) workflows with name '${name}'`)
+    }
+    return workflowsFiltered[0]
+  }
+
+  async getWorkflows(
+    repo: Repository
+  ): Promise<ListWorkflowData> {
+    try {
+      const resp = await this.octokit.rest.actions.listRepoWorkflows({
+        ...repo,
+      })
+      core.debug(`Response for listing workflows: ${inspect(resp)}`)
+      if (resp.status !== 200) {
+        throw new Error(
+          `Response status for listing workflows: ${resp.status}`
+        )
+      }
+      return resp.data
+    } catch (error) {
+      core.debug(error)
+      core.warning(`Failed for listing workflows`)
+      throw error
+    }
+  }
+
   async getWorkflowRunId(
     repo: Repository,
-    workflowId: string,
+    workflowId: number,
     event: string,
     createdAt: number
   ): Promise<number> {

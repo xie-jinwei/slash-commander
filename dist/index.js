@@ -363,6 +363,36 @@ class GitHubHelper {
             }
         });
     }
+    getWorkflowWithName(repo, name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const workflowList = yield this.getWorkflows(repo);
+            const workflowsFiltered = workflowList.workflows.filter(w => w.name === name);
+            if (workflowsFiltered.length === 0) {
+                throw new Error(`Cannot find any workflows with name '${name}'`);
+            }
+            if (workflowsFiltered.length > 1) {
+                throw new Error(`Found more than 1 (actually ${workflowsFiltered.length}) workflows with name '${name}'`);
+            }
+            return workflowsFiltered[0];
+        });
+    }
+    getWorkflows(repo) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.actions.listRepoWorkflows(Object.assign({}, repo));
+                core.debug(`Response for listing workflows: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for listing workflows: ${resp.status}`);
+                }
+                return resp.data;
+            }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for listing workflows`);
+                throw error;
+            }
+        });
+    }
     getWorkflowRunId(repo, workflowId, event, createdAt) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -825,9 +855,12 @@ function handleIssueComment(token, commandsConfig) {
                 const pullData = yield helper.getPull(repo, issueNumber);
                 const ref = pullData.head.ref;
                 const workflowName = commands_helper_1.formatWithArguments(cmd.workflow_name_format, args);
+                core.info(`workflow name is ${workflowName}`);
+                const workflow = yield helper.getWorkflowWithName(repo, workflowName);
+                core.info(`workflow with name ${workflowName} is ${workflow}`);
                 const triggerDate = Date.now();
-                yield helper.createWorkflowDispatch(repo, workflowName, ref);
-                const workflowRunId = yield helper.getWorkflowRunId(repo, workflowName, 'workflow_dispatch', triggerDate);
+                yield helper.createWorkflowDispatch(repo, workflow.id, ref);
+                const workflowRunId = yield helper.getWorkflowRunId(repo, workflow.id, 'workflow_dispatch', triggerDate);
                 const workflowRun = yield helper.getWorkflowRun(repo, workflowRunId);
                 commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>Workflow run started: name = ${workflowName}, ref = ${ref}\n>View workflow run at: ${workflowRun.html_url}`);
                 yield helper.createCommitStatus(repo, pullData.head.sha, workflowName, 'pending', `Workflow run was triggered by slash command in comment ${commentId}`, workflowRun.html_url);

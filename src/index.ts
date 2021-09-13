@@ -458,11 +458,14 @@ async function handleIssueComment(
       const pullData = await helper.getPull(repo, issueNumber)
       const ref: string = pullData.head.ref
       const workflowName = formatWithArguments(cmd.workflow_name_format, args)
+      core.info(`workflow name is ${workflowName}`)
+      const workflow = await helper.getWorkflowWithName(repo, workflowName)
+      core.info(`workflow with name ${workflowName} is ${workflow}`)
       const triggerDate = Date.now()
-      await helper.createWorkflowDispatch(repo, workflowName, ref)
+      await helper.createWorkflowDispatch(repo, workflow.id, ref)
       const workflowRunId = await helper.getWorkflowRunId(
         repo,
-        workflowName,
+        workflow.id,
         'workflow_dispatch',
         triggerDate
       )
