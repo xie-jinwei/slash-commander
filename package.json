@@ -1,31 +1,32 @@
 {
-  "name": "github-actions",
+  "name": "slash-commander",
   "version": "1.0.0",
-  "description": "Request review on a pull request",
+  "description": "Enable slash command centered ChatOps using GitHub Actions",
+  "main": "lib/index.js",
   "scripts": {
-    "build": "./build.sh",
+    "build": "tsc && ncc build",
     "format": "prettier --write '**/*.ts'",
     "format-check": "prettier --check '**/*.ts'",
     "lint": "eslint **/*.ts"
   },
   "keywords": [
     "github",
-    "actions"
+    "actions",
+    "slash",
+    "command"
   ],
   "author": "XIE Jinwei",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xie-jinwei/github-actions.git"
+    "url": "git+https://github.com/xie-jinwei/slash-commander.git"
   },
   "dependencies": {
     "@actions/core": "^1.4.0",
     "@actions/github": "^5.0.0",
     "@octokit/core": "^3.5.1",
     "@octokit/plugin-rest-endpoint-methods": "^5.10.0",
-    "@octokit/webhooks": "^9.14.0",
     "@octokit/webhooks-types": "^4.4.0",
-    "@types/micromatch": "^4.0.2",
     "@types/node": "^16.4.0",
     "probot": "11.0.1"
   },
