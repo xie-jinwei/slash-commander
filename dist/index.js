@@ -57,7 +57,7 @@ function tokeniseCommand(command) {
 exports.tokeniseCommand = tokeniseCommand;
 function formatWithArguments(format, args) {
     for (let index = 0; index < args.length; index++) {
-        var regexp = new RegExp(`/\\$${index + 1}`);
+        var regexp = new RegExp(`/\\$${index + 1}/g`);
         format = format.replace(regexp, args[index]);
     }
     return format;
@@ -165,14 +165,14 @@ class GitHubHelper {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const resp = yield this.octokit.rest.issues.addLabels(Object.assign(Object.assign({}, repo), { issue_number: issueNumber, labels: [label] }));
-                core.debug(`Response for adding label on issue ${issueNumber}: ${util_1.inspect(resp)}`);
+                core.debug(`Response for adding label ${label} on issue ${issueNumber}: ${util_1.inspect(resp)}`);
                 if (resp.status !== 200) {
-                    throw new Error(`Response status for adding label on issue ${issueNumber}: ${resp.status}`);
+                    throw new Error(`Response status for adding ${label} label on issue ${issueNumber}: ${resp.status}`);
                 }
             }
             catch (error) {
                 core.debug(error);
-                core.warning(`Failed for adding label on issue ${issueNumber}`);
+                core.warning(`Failed for adding ${label} label on issue ${issueNumber}`);
                 throw error;
             }
         });
@@ -181,14 +181,14 @@ class GitHubHelper {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const resp = yield this.octokit.rest.issues.removeLabel(Object.assign(Object.assign({}, repo), { issue_number: issueNumber, name: label }));
-                core.debug(`Response for removing label on issue ${issueNumber}: ${util_1.inspect(resp)}`);
+                core.debug(`Response for removing ${label} label on issue ${issueNumber}: ${util_1.inspect(resp)}`);
                 if (resp.status !== 200) {
-                    throw new Error(`Response status for removing label on issue ${issueNumber}: ${resp.status}`);
+                    throw new Error(`Response status for removing ${label} label on issue ${issueNumber}: ${resp.status}`);
                 }
             }
             catch (error) {
                 core.debug(error);
-                core.warning(`Failed for removing label on issue ${issueNumber}`);
+                core.warning(`Failed for removing ${label} label on issue ${issueNumber}`);
                 throw error;
             }
         });
