@@ -36,7 +36,7 @@ export function tokeniseCommand(command: string): string[] {
 
 export function formatWithArguments(format: string, args: string[]): string {
   for (let index = 0; index < args.length; index++) {
-    var regexp = new RegExp(`/\$${index + 1}`)
+    var regexp = new RegExp(`/\\$${index + 1}`)
     format = format.replace(regexp, args[index])
   }
   return format
