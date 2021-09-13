@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import {inspect} from 'util'
+import YAML from 'yaml'
 
 export interface Inputs {
   token: string
@@ -52,14 +53,14 @@ export function getInputs(): Inputs {
 }
 
 export function getCommandsConfig(inputs: Inputs): CommandsConfig {
-  const jsonConfig = JSON.parse(inputs.config)
-  core.debug(`JSON config: ${inspect(jsonConfig)}`)
+  const yamlConfig = YAML.parse(inputs.config)
+  core.debug(`YAML config: ${inspect(yamlConfig)}`)
   const commandsConfig: CommandsConfig = {
-    use_reaction: jsonConfig.use_reaction ?? true,
+    use_reaction: yamlConfig.use_reaction ?? true,
     commands: []
   }
 
-  for (const jc of jsonConfig.commands) {
+  for (const jc of yamlConfig.commands) {
     const cmd: Command = {
       enable: jc.enable ?? true,
       name: jc.name ?? '',

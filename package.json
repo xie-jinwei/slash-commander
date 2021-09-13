@@ -28,7 +28,8 @@
     "@octokit/plugin-rest-endpoint-methods": "^5.10.0",
     "@octokit/webhooks-types": "^4.4.0",
     "@types/node": "^16.4.0",
-    "probot": "11.0.1"
+    "probot": "11.0.1",
+    "yaml": "^1.10.2"
   },
   "devDependencies": {
     "@typescript-eslint/parser": "4.28.4",
