@@ -57,7 +57,7 @@ function tokeniseCommand(command) {
 exports.tokeniseCommand = tokeniseCommand;
 function formatWithArguments(format, args) {
     for (let index = 0; index < args.length; index++) {
-        var regexp = new RegExp(`/\\$${index + 1}/g`);
+        let regexp = new RegExp(`\\$${index + 1}`, 'g');
         format = format.replace(regexp, args[index]);
     }
     return format;
