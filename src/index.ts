@@ -374,7 +374,7 @@ async function handleIssueComment(
         title + ' ' + formatWithArguments(cmd.suffix_issue_title_format, args)
     }
     if (cmd.remove_issue_title_format) {
-      title = title.replaceAll(
+      title = title.replace(
         formatWithArguments(cmd.remove_issue_title_format, args),
         ''
       )
@@ -392,7 +392,7 @@ async function handleIssueComment(
         body + '\n' + formatWithArguments(cmd.suffix_issue_body_format, args)
     }
     if (cmd.remove_issue_body_format) {
-      body = body.replaceAll(
+      body = body.replace(
         formatWithArguments(cmd.remove_issue_body_format, args),
         ''
       )

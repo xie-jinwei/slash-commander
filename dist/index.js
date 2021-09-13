@@ -58,7 +58,7 @@ exports.tokeniseCommand = tokeniseCommand;
 function formatWithArguments(format, args) {
     for (let index = 0; index < args.length; index++) {
         var regexp = new RegExp(`/\$${index + 1}`);
-        format = format.replaceAll(regexp, args[index]);
+        format = format.replace(regexp, args[index]);
     }
     return format;
 }
@@ -746,7 +746,7 @@ function handleIssueComment(token, commandsConfig) {
                     title + ' ' + commands_helper_1.formatWithArguments(cmd.suffix_issue_title_format, args);
             }
             if (cmd.remove_issue_title_format) {
-                title = title.replaceAll(commands_helper_1.formatWithArguments(cmd.remove_issue_title_format, args), '');
+                title = title.replace(commands_helper_1.formatWithArguments(cmd.remove_issue_title_format, args), '');
             }
             if (cmd.replace_issue_title_format) {
                 title = commands_helper_1.formatWithArguments(cmd.replace_issue_title_format, args);
@@ -761,7 +761,7 @@ function handleIssueComment(token, commandsConfig) {
                     body + '\n' + commands_helper_1.formatWithArguments(cmd.suffix_issue_body_format, args);
             }
             if (cmd.remove_issue_body_format) {
-                body = body.replaceAll(commands_helper_1.formatWithArguments(cmd.remove_issue_body_format, args), '');
+                body = body.replace(commands_helper_1.formatWithArguments(cmd.remove_issue_body_format, args), '');
             }
             if (cmd.replace_issue_body_format) {
                 body = commands_helper_1.formatWithArguments(cmd.replace_issue_body_format, args);
