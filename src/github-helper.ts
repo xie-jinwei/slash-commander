@@ -337,23 +337,23 @@ export class GitHubHelper {
     body: string
   ): Promise<void> {
     try {
-      const resp = await this.octokit.rest.pulls.update({
+      const resp = await this.octokit.rest.issues.update({
         ...repo,
-        pull_number: issueNumber,
+        issue_number: issueNumber,
         title: title,
         body: body
       })
       core.debug(
-        `Response for updating pull request ${issueNumber}: ${inspect(resp)}`
+        `Response for updating issue ${issueNumber}: ${inspect(resp)}`
       )
       if (resp.status !== 200) {
         throw new Error(
-          `Response status for updating pull request ${issueNumber}: ${resp.status}`
+          `Response status for updating issue ${issueNumber}: ${resp.status}`
         )
       }
     } catch (error) {
       core.debug(error)
-      core.warning(`Failed for updating pull request ${issueNumber}`)
+      core.warning(`Failed for updating issue ${issueNumber}`)
       throw error
     }
   }

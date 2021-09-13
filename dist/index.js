@@ -294,15 +294,15 @@ class GitHubHelper {
     updateIssue(repo, issueNumber, title, body) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const resp = yield this.octokit.rest.pulls.update(Object.assign(Object.assign({}, repo), { pull_number: issueNumber, title: title, body: body }));
-                core.debug(`Response for updating pull request ${issueNumber}: ${util_1.inspect(resp)}`);
+                const resp = yield this.octokit.rest.issues.update(Object.assign(Object.assign({}, repo), { issue_number: issueNumber, title: title, body: body }));
+                core.debug(`Response for updating issue ${issueNumber}: ${util_1.inspect(resp)}`);
                 if (resp.status !== 200) {
-                    throw new Error(`Response status for updating pull request ${issueNumber}: ${resp.status}`);
+                    throw new Error(`Response status for updating issue ${issueNumber}: ${resp.status}`);
                 }
             }
             catch (error) {
                 core.debug(error);
-                core.warning(`Failed for updating pull request ${issueNumber}`);
+                core.warning(`Failed for updating issue ${issueNumber}`);
                 throw error;
             }
         });
