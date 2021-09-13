@@ -679,33 +679,75 @@ function handleIssueComment(token, commandsConfig) {
         }
         if (cmd.label_format) {
             const label = commands_helper_1.formatWithArguments(cmd.label_format, args);
-            yield helper.addLabel(repo, issueNumber, label);
-            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): added label ${label}`);
+            try {
+                yield helper.addLabel(repo, issueNumber, label);
+            }
+            catch (error) {
+                if (!cmd.ignore_error) {
+                    throw error;
+                }
+            }
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): added label '${label}'`);
         }
         if (cmd.unlabel_format) {
             const label = commands_helper_1.formatWithArguments(cmd.unlabel_format, args);
-            yield helper.removeLabel(repo, issueNumber, label);
-            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): removed label ${label}`);
+            try {
+                yield helper.removeLabel(repo, issueNumber, label);
+            }
+            catch (error) {
+                if (!cmd.ignore_error) {
+                    throw error;
+                }
+            }
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): removed label '${label}'`);
         }
         if (cmd.assignee_format) {
             const assignee = commands_helper_1.formatWithArguments(cmd.assignee_format, args);
-            yield helper.addAssignee(repo, issueNumber, assignee);
-            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): added assignee ${assignee}`);
+            try {
+                yield helper.addAssignee(repo, issueNumber, assignee);
+            }
+            catch (error) {
+                if (!cmd.ignore_error) {
+                    throw error;
+                }
+            }
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): added assignee '${assignee}'`);
         }
         if (cmd.unassignee_format) {
             const assignee = commands_helper_1.formatWithArguments(cmd.unassignee_format, args);
-            yield helper.removeAssignee(repo, issueNumber, assignee);
-            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): removed assignee ${assignee}`);
+            try {
+                yield helper.removeAssignee(repo, issueNumber, assignee);
+            }
+            catch (error) {
+                if (!cmd.ignore_error) {
+                    throw error;
+                }
+            }
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): removed assignee '${assignee}'`);
         }
         if (cmd.request_reviewer_format) {
             const reviewer = commands_helper_1.formatWithArguments(cmd.request_reviewer_format, args);
-            yield helper.addReviewer(repo, issueNumber, reviewer);
-            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): added reviewer ${reviewer}`);
+            try {
+                yield helper.addReviewer(repo, issueNumber, reviewer);
+            }
+            catch (error) {
+                if (!cmd.ignore_error) {
+                    throw error;
+                }
+            }
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): added reviewer '${reviewer}'`);
         }
         if (cmd.unrequest_reviewer_format) {
             const reviewer = commands_helper_1.formatWithArguments(cmd.unrequest_reviewer_format, args);
-            yield helper.removeReviewer(repo, issueNumber, reviewer);
-            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): removed reviewer ${reviewer}`);
+            try {
+                yield helper.removeReviewer(repo, issueNumber, reviewer);
+            }
+            catch (error) {
+                if (!cmd.ignore_error) {
+                    throw error;
+                }
+            }
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): removed reviewer '${reviewer}'`);
         }
         if (cmd.prefix_issue_title_format ||
             cmd.suffix_issue_title_format ||
@@ -768,19 +810,33 @@ function handleIssueComment(token, commandsConfig) {
             }
             title = title.trim();
             body = body.trim();
-            yield helper.updateIssue(repo, issueNumber, title, body);
-            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): updated issue ${issueNumber}`);
+            try {
+                yield helper.updateIssue(repo, issueNumber, title, body);
+            }
+            catch (error) {
+                if (!cmd.ignore_error) {
+                    throw error;
+                }
+            }
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): updated issue '${issueNumber}'`);
         }
         if (cmd.workflow_name_format) {
-            const pullData = yield helper.getPull(repo, issueNumber);
-            const ref = pullData.head.ref;
-            const workflowName = commands_helper_1.formatWithArguments(cmd.workflow_name_format, args);
-            const triggerDate = Date.now();
-            yield helper.createWorkflowDispatch(repo, workflowName, ref);
-            const workflowRunId = yield helper.getWorkflowRunId(repo, workflowName, 'workflow_dispatch', triggerDate);
-            const workflowRun = yield helper.getWorkflowRun(repo, workflowRunId);
-            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>Workflow run started: name = ${workflowName}, ref = ${ref}\n>View workflow run at: ${workflowRun.html_url}`);
-            yield helper.createCommitStatus(repo, pullData.head.sha, workflowName, 'pending', `Workflow run was triggered by slash command in comment ${commentId}`, workflowRun.html_url);
+            try {
+                const pullData = yield helper.getPull(repo, issueNumber);
+                const ref = pullData.head.ref;
+                const workflowName = commands_helper_1.formatWithArguments(cmd.workflow_name_format, args);
+                const triggerDate = Date.now();
+                yield helper.createWorkflowDispatch(repo, workflowName, ref);
+                const workflowRunId = yield helper.getWorkflowRunId(repo, workflowName, 'workflow_dispatch', triggerDate);
+                const workflowRun = yield helper.getWorkflowRun(repo, workflowRunId);
+                commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>Workflow run started: name = ${workflowName}, ref = ${ref}\n>View workflow run at: ${workflowRun.html_url}`);
+                yield helper.createCommitStatus(repo, pullData.head.sha, workflowName, 'pending', `Workflow run was triggered by slash command in comment ${commentId}`, workflowRun.html_url);
+            }
+            catch (error) {
+                if (!cmd.ignore_error) {
+                    throw error;
+                }
+            }
         }
     });
 }
@@ -829,7 +885,7 @@ function getInputs() {
 }
 exports.getInputs = getInputs;
 function getCommandsConfig(inputs) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
     const yamlConfig = yaml_1.default.parse(inputs.config);
     core.debug(`YAML config: ${util_1.inspect(yamlConfig)}`);
     const commandsConfig = {
@@ -845,21 +901,22 @@ function getCommandsConfig(inputs) {
             args: (_f = jc.args) !== null && _f !== void 0 ? _f : 0,
             issue_type: (_g = jc.issue_type) !== null && _g !== void 0 ? _g : 'issue',
             permission: (_h = jc.permission) !== null && _h !== void 0 ? _h : 'read',
-            label_format: (_j = jc.label_format) !== null && _j !== void 0 ? _j : null,
-            unlabel_format: (_k = jc.unlabel_format) !== null && _k !== void 0 ? _k : null,
-            assignee_format: (_l = jc.assignee_format) !== null && _l !== void 0 ? _l : null,
-            unassignee_format: (_m = jc.unassignee_format) !== null && _m !== void 0 ? _m : null,
-            request_reviewer_format: (_o = jc.request_reviewer_format) !== null && _o !== void 0 ? _o : null,
-            unrequest_reviewer_format: (_p = jc.unrequest_reviewer_format) !== null && _p !== void 0 ? _p : null,
-            prefix_issue_title_format: (_q = jc.prefix_issue_title_format) !== null && _q !== void 0 ? _q : null,
-            suffix_issue_title_format: (_r = jc.suffix_issue_title_format) !== null && _r !== void 0 ? _r : null,
-            remove_issue_title_format: (_s = jc.remove_issue_title_format) !== null && _s !== void 0 ? _s : null,
-            replace_issue_title_format: (_t = jc.replace_issue_title_format) !== null && _t !== void 0 ? _t : null,
-            prefix_issue_body_format: (_u = jc.prefix_issue_body_format) !== null && _u !== void 0 ? _u : null,
-            suffix_issue_body_format: (_v = jc.suffix_issue_body_format) !== null && _v !== void 0 ? _v : null,
-            remove_issue_body_format: (_w = jc.remove_issue_body_format) !== null && _w !== void 0 ? _w : null,
-            replace_issue_body_format: (_x = jc.replace_issue_body_format) !== null && _x !== void 0 ? _x : null,
-            workflow_name_format: (_y = jc.workflow_name_format) !== null && _y !== void 0 ? _y : null
+            ignore_error: (_j = jc.ignore_error) !== null && _j !== void 0 ? _j : false,
+            label_format: (_k = jc.label_format) !== null && _k !== void 0 ? _k : null,
+            unlabel_format: (_l = jc.unlabel_format) !== null && _l !== void 0 ? _l : null,
+            assignee_format: (_m = jc.assignee_format) !== null && _m !== void 0 ? _m : null,
+            unassignee_format: (_o = jc.unassignee_format) !== null && _o !== void 0 ? _o : null,
+            request_reviewer_format: (_p = jc.request_reviewer_format) !== null && _p !== void 0 ? _p : null,
+            unrequest_reviewer_format: (_q = jc.unrequest_reviewer_format) !== null && _q !== void 0 ? _q : null,
+            prefix_issue_title_format: (_r = jc.prefix_issue_title_format) !== null && _r !== void 0 ? _r : null,
+            suffix_issue_title_format: (_s = jc.suffix_issue_title_format) !== null && _s !== void 0 ? _s : null,
+            remove_issue_title_format: (_t = jc.remove_issue_title_format) !== null && _t !== void 0 ? _t : null,
+            replace_issue_title_format: (_u = jc.replace_issue_title_format) !== null && _u !== void 0 ? _u : null,
+            prefix_issue_body_format: (_v = jc.prefix_issue_body_format) !== null && _v !== void 0 ? _v : null,
+            suffix_issue_body_format: (_w = jc.suffix_issue_body_format) !== null && _w !== void 0 ? _w : null,
+            remove_issue_body_format: (_x = jc.remove_issue_body_format) !== null && _x !== void 0 ? _x : null,
+            replace_issue_body_format: (_y = jc.replace_issue_body_format) !== null && _y !== void 0 ? _y : null,
+            workflow_name_format: (_z = jc.workflow_name_format) !== null && _z !== void 0 ? _z : null
         };
         commandsConfig.commands.push(cmd);
     }

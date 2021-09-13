@@ -265,67 +265,103 @@ async function handleIssueComment(
 
   if (cmd.label_format) {
     const label = formatWithArguments(cmd.label_format, args)
-    await helper.addLabel(repo, issueNumber, label)
+    try {
+      await helper.addLabel(repo, issueNumber, label)
+    } catch (error) {
+      if (!cmd.ignore_error) {
+        throw error
+      }
+    }
     commentBody = await helper.suffixComment(
       repo,
       commentId,
       commentBody,
-      `>github-actions(bot): added label ${label}`
+      `>github-actions(bot): added label '${label}'`
     )
   }
 
   if (cmd.unlabel_format) {
     const label = formatWithArguments(cmd.unlabel_format, args)
-    await helper.removeLabel(repo, issueNumber, label)
+    try {
+      await helper.removeLabel(repo, issueNumber, label)
+    } catch (error) {
+      if (!cmd.ignore_error) {
+        throw error
+      }
+    }
     commentBody = await helper.suffixComment(
       repo,
       commentId,
       commentBody,
-      `>github-actions(bot): removed label ${label}`
+      `>github-actions(bot): removed label '${label}'`
     )
   }
 
   if (cmd.assignee_format) {
     const assignee = formatWithArguments(cmd.assignee_format, args)
-    await helper.addAssignee(repo, issueNumber, assignee)
+    try {
+      await helper.addAssignee(repo, issueNumber, assignee)
+    } catch (error) {
+      if (!cmd.ignore_error) {
+        throw error
+      }
+    }
     commentBody = await helper.suffixComment(
       repo,
       commentId,
       commentBody,
-      `>github-actions(bot): added assignee ${assignee}`
+      `>github-actions(bot): added assignee '${assignee}'`
     )
   }
 
   if (cmd.unassignee_format) {
     const assignee = formatWithArguments(cmd.unassignee_format, args)
-    await helper.removeAssignee(repo, issueNumber, assignee)
+    try {
+      await helper.removeAssignee(repo, issueNumber, assignee)
+    } catch (error) {
+      if (!cmd.ignore_error) {
+        throw error
+      }
+    }
     commentBody = await helper.suffixComment(
       repo,
       commentId,
       commentBody,
-      `>github-actions(bot): removed assignee ${assignee}`
+      `>github-actions(bot): removed assignee '${assignee}'`
     )
   }
 
   if (cmd.request_reviewer_format) {
     const reviewer = formatWithArguments(cmd.request_reviewer_format, args)
-    await helper.addReviewer(repo, issueNumber, reviewer)
+    try {
+      await helper.addReviewer(repo, issueNumber, reviewer)
+    } catch (error) {
+      if (!cmd.ignore_error) {
+        throw error
+      }
+    }
     commentBody = await helper.suffixComment(
       repo,
       commentId,
       commentBody,
-      `>github-actions(bot): added reviewer ${reviewer}`
+      `>github-actions(bot): added reviewer '${reviewer}'`
     )
   }
 
   if (cmd.unrequest_reviewer_format) {
     const reviewer = formatWithArguments(cmd.unrequest_reviewer_format, args)
-    await helper.removeReviewer(repo, issueNumber, reviewer)
+    try {
+      await helper.removeReviewer(repo, issueNumber, reviewer)
+    } catch (error) {
+      if (!cmd.ignore_error) {
+        throw error
+      }
+    }
     commentBody = await helper.suffixComment(
       repo,
       commentId,
       commentBody,
-      `>github-actions(bot): removed reviewer ${reviewer}`
+      `>github-actions(bot): removed reviewer '${reviewer}'`
     )
   }
 
@@ -402,42 +438,54 @@ async function handleIssueComment(
     }
     title = title.trim()
     body = body.trim()
-    await helper.updateIssue(repo, issueNumber, title, body)
+    try {
+      await helper.updateIssue(repo, issueNumber, title, body)
+    } catch (error) {
+      if (!cmd.ignore_error) {
+        throw error
+      }
+    }
     commentBody = await helper.suffixComment(
       repo,
       commentId,
       commentBody,
-      `>github-actions(bot): updated issue ${issueNumber}`
+      `>github-actions(bot): updated issue '${issueNumber}'`
     )
   }
 
   if (cmd.workflow_name_format) {
-    const pullData = await helper.getPull(repo, issueNumber)
-    const ref: string = pullData.head.ref
-    const workflowName = formatWithArguments(cmd.workflow_name_format, args)
-    const triggerDate = Date.now()
-    await helper.createWorkflowDispatch(repo, workflowName, ref)
-    const workflowRunId = await helper.getWorkflowRunId(
-      repo,
-      workflowName,
-      'workflow_dispatch',
-      triggerDate
-    )
-    const workflowRun = await helper.getWorkflowRun(repo, workflowRunId)
-    commentBody = await helper.suffixComment(
-      repo,
-      commentId,
-      commentBody,
-      `>Workflow run started: name = ${workflowName}, ref = ${ref}\n>View workflow run at: ${workflowRun.html_url}`
-    )
-    await helper.createCommitStatus(
-      repo,
-      pullData.head.sha,
-      workflowName,
-      'pending',
-      `Workflow run was triggered by slash command in comment ${commentId}`,
-      workflowRun.html_url
-    )
+    try {
+      const pullData = await helper.getPull(repo, issueNumber)
+      const ref: string = pullData.head.ref
+      const workflowName = formatWithArguments(cmd.workflow_name_format, args)
+      const triggerDate = Date.now()
+      await helper.createWorkflowDispatch(repo, workflowName, ref)
+      const workflowRunId = await helper.getWorkflowRunId(
+        repo,
+        workflowName,
+        'workflow_dispatch',
+        triggerDate
+      )
+      const workflowRun = await helper.getWorkflowRun(repo, workflowRunId)
+      commentBody = await helper.suffixComment(
+        repo,
+        commentId,
+        commentBody,
+        `>Workflow run started: name = ${workflowName}, ref = ${ref}\n>View workflow run at: ${workflowRun.html_url}`
+      )
+      await helper.createCommitStatus(
+        repo,
+        pullData.head.sha,
+        workflowName,
+        'pending',
+        `Workflow run was triggered by slash command in comment ${commentId}`,
+        workflowRun.html_url
+      )
+    } catch (error) {
+      if (!cmd.ignore_error) {
+        throw error
+      }
+    }
   }
 }
 

@@ -20,6 +20,7 @@ export interface Command {
   args: number
   issue_type: 'issue' | 'pull_request' | 'both'
   permission: 'none' | 'read' | 'write' | 'admin'
+  ignore_error: boolean
   // if not null, add label to issue using this format
   label_format: string | null
   // if not null, remove label from issue with this format
@@ -69,6 +70,7 @@ export function getCommandsConfig(inputs: Inputs): CommandsConfig {
       args: jc.args ?? 0,
       issue_type: jc.issue_type ?? 'issue',
       permission: jc.permission ?? 'read',
+      ignore_error: jc.ignore_error ?? false,
       label_format: jc.label_format ?? null,
       unlabel_format: jc.unlabel_format ?? null,
       assignee_format: jc.assignee_format ?? null,
