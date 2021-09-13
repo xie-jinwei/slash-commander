@@ -57,7 +57,8 @@ function tokeniseCommand(command) {
 exports.tokeniseCommand = tokeniseCommand;
 function formatWithArguments(format, args) {
     for (let index = 0; index < args.length; index++) {
-        format = format.replaceAll(`$${index + 1}`, args[index]);
+        var regexp = new RegExp(`/\$${index + 1}`);
+        format = format.replaceAll(regexp, args[index]);
     }
     return format;
 }
@@ -90,6 +91,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GitHubHelper = void 0;
 const github = __importStar(__nccwpck_require__(5438));
@@ -99,41 +109,40 @@ class GitHubHelper {
     constructor(token) {
         this.octokit = github.getOctokit(token);
     }
-    async addReaction(repo, commentId, reaction) {
-        try {
-            await this.octokit.rest.reactions.createForIssueComment({
-                ...repo,
-                comment_id: commentId,
-                content: reaction
-            });
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed to set reaction on comment ID ${commentId}.`);
-            throw error;
-        }
-    }
-    async getPermission(repo, username) {
-        try {
-            const resp = await this.octokit.rest.repos.getCollaboratorPermissionLevel({
-                ...repo,
-                username: username
-            });
-            core.debug(`Response for getting permission of user ${username}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for getting permission of user ${username}: ${resp.status}`);
+    addReaction(repo, commentId, reaction) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.octokit.rest.reactions.createForIssueComment(Object.assign(Object.assign({}, repo), { comment_id: commentId, content: reaction }));
             }
-            return resp.data.permission;
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for getting permission of user ${username}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed to set reaction on comment ID ${commentId}.`);
+                throw error;
+            }
+        });
     }
-    async havePermission(repo, username, permissionRequired) {
-        const permission = await this.getPermission(repo, username);
-        return this.containPermission(permission, permissionRequired);
+    getPermission(repo, username) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.repos.getCollaboratorPermissionLevel(Object.assign(Object.assign({}, repo), { username: username }));
+                core.debug(`Response for getting permission of user ${username}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for getting permission of user ${username}: ${resp.status}`);
+                }
+                return resp.data.permission;
+            }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for getting permission of user ${username}`);
+                throw error;
+            }
+        });
+    }
+    havePermission(repo, username, permissionRequired) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const permission = yield this.getPermission(repo, username);
+            return this.containPermission(permission, permissionRequired);
+        });
     }
     containPermission(userPermission, requiredPermission) {
         if (userPermission === '') {
@@ -152,313 +161,284 @@ class GitHubHelper {
         core.debug(`Required permission: ${requiredPermission} (${permissionLevels[requiredPermission]})`);
         return (permissionLevels[userPermission] >= permissionLevels[requiredPermission]);
     }
-    async addLabel(repo, issueNumber, label) {
-        try {
-            const resp = await this.octokit.rest.issues.addLabels({
-                ...repo,
-                issue_number: issueNumber,
-                labels: [label]
-            });
-            core.debug(`Response for adding label on issue ${issueNumber}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for adding label on issue ${issueNumber}: ${resp.status}`);
+    addLabel(repo, issueNumber, label) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.issues.addLabels(Object.assign(Object.assign({}, repo), { issue_number: issueNumber, labels: [label] }));
+                core.debug(`Response for adding label on issue ${issueNumber}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for adding label on issue ${issueNumber}: ${resp.status}`);
+                }
             }
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for adding label on issue ${issueNumber}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for adding label on issue ${issueNumber}`);
+                throw error;
+            }
+        });
     }
-    async removeLabel(repo, issueNumber, label) {
-        try {
-            const resp = await this.octokit.rest.issues.removeLabel({
-                ...repo,
-                issue_number: issueNumber,
-                name: label
-            });
-            core.debug(`Response for removing label on issue ${issueNumber}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for removing label on issue ${issueNumber}: ${resp.status}`);
+    removeLabel(repo, issueNumber, label) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.issues.removeLabel(Object.assign(Object.assign({}, repo), { issue_number: issueNumber, name: label }));
+                core.debug(`Response for removing label on issue ${issueNumber}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for removing label on issue ${issueNumber}: ${resp.status}`);
+                }
             }
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for removing label on issue ${issueNumber}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for removing label on issue ${issueNumber}`);
+                throw error;
+            }
+        });
     }
-    async addAssignee(repo, issueNumber, assignee) {
-        try {
-            const resp = await this.octokit.rest.issues.addAssignees({
-                ...repo,
-                issue_number: issueNumber,
-                assignees: [assignee]
-            });
-            core.debug(`Response for adding assignee on issue ${issueNumber}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 201) {
-                throw new Error(`Response status for adding assignee on issue ${issueNumber}: ${resp.status}`);
+    addAssignee(repo, issueNumber, assignee) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.issues.addAssignees(Object.assign(Object.assign({}, repo), { issue_number: issueNumber, assignees: [assignee] }));
+                core.debug(`Response for adding assignee on issue ${issueNumber}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 201) {
+                    throw new Error(`Response status for adding assignee on issue ${issueNumber}: ${resp.status}`);
+                }
             }
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for adding assignee on issue ${issueNumber}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for adding assignee on issue ${issueNumber}`);
+                throw error;
+            }
+        });
     }
-    async removeAssignee(repo, issueNumber, assignee) {
-        try {
-            const resp = await this.octokit.rest.issues.removeAssignees({
-                ...repo,
-                issue_number: issueNumber,
-                assignees: [assignee]
-            });
-            core.debug(`Response for removing assignee on issue ${issueNumber}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for removing assignee on issue ${issueNumber}: ${resp.status}`);
+    removeAssignee(repo, issueNumber, assignee) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.issues.removeAssignees(Object.assign(Object.assign({}, repo), { issue_number: issueNumber, assignees: [assignee] }));
+                core.debug(`Response for removing assignee on issue ${issueNumber}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for removing assignee on issue ${issueNumber}: ${resp.status}`);
+                }
             }
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for removing assignee on issue ${issueNumber}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for removing assignee on issue ${issueNumber}`);
+                throw error;
+            }
+        });
     }
-    async addReviewer(repo, issueNumber, reviewer) {
-        try {
-            const resp = await this.octokit.rest.pulls.requestReviewers({
-                ...repo,
-                pull_number: issueNumber,
-                reviewers: [reviewer]
-            });
-            core.debug(`Response for adding reviewer on pull request ${issueNumber}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 201) {
-                throw new Error(`Response status for adding reviewer on pull request ${issueNumber}: ${resp.status}`);
+    addReviewer(repo, issueNumber, reviewer) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.pulls.requestReviewers(Object.assign(Object.assign({}, repo), { pull_number: issueNumber, reviewers: [reviewer] }));
+                core.debug(`Response for adding reviewer on pull request ${issueNumber}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 201) {
+                    throw new Error(`Response status for adding reviewer on pull request ${issueNumber}: ${resp.status}`);
+                }
             }
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for adding reviewer on pull request ${issueNumber}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for adding reviewer on pull request ${issueNumber}`);
+                throw error;
+            }
+        });
     }
-    async removeReviewer(repo, issueNumber, reviewer) {
-        try {
-            const resp = await this.octokit.rest.pulls.removeRequestedReviewers({
-                ...repo,
-                pull_number: issueNumber,
-                reviewers: [reviewer]
-            });
-            core.debug(`Response for removing reviewer on pull request ${issueNumber}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for removing reviewer on pull request ${issueNumber}: ${resp.status}`);
+    removeReviewer(repo, issueNumber, reviewer) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.pulls.removeRequestedReviewers(Object.assign(Object.assign({}, repo), { pull_number: issueNumber, reviewers: [reviewer] }));
+                core.debug(`Response for removing reviewer on pull request ${issueNumber}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for removing reviewer on pull request ${issueNumber}: ${resp.status}`);
+                }
             }
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for removing reviewer on pull request ${issueNumber}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for removing reviewer on pull request ${issueNumber}`);
+                throw error;
+            }
+        });
     }
-    async getIssue(repo, issueNumber) {
-        try {
-            const resp = await this.octokit.rest.issues.get({
-                ...repo,
-                issue_number: issueNumber
-            });
-            core.debug(`Response for getting issue ${issueNumber}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for getting issue ${issueNumber}: ${resp.status}`);
+    getIssue(repo, issueNumber) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.issues.get(Object.assign(Object.assign({}, repo), { issue_number: issueNumber }));
+                core.debug(`Response for getting issue ${issueNumber}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for getting issue ${issueNumber}: ${resp.status}`);
+                }
+                return resp.data;
             }
-            return resp.data;
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for getting issue ${issueNumber}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for getting issue ${issueNumber}`);
+                throw error;
+            }
+        });
     }
-    async getPull(repo, issueNumber) {
-        try {
-            const resp = await this.octokit.rest.pulls.get({
-                ...repo,
-                pull_number: issueNumber
-            });
-            core.debug(`Response for getting pull request ${issueNumber}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for getting pull request ${issueNumber}: ${resp.status}`);
+    getPull(repo, issueNumber) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.pulls.get(Object.assign(Object.assign({}, repo), { pull_number: issueNumber }));
+                core.debug(`Response for getting pull request ${issueNumber}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for getting pull request ${issueNumber}: ${resp.status}`);
+                }
+                return resp.data;
             }
-            return resp.data;
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for getting pull request ${issueNumber}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for getting pull request ${issueNumber}`);
+                throw error;
+            }
+        });
     }
-    async updateIssue(repo, issueNumber, title, body) {
-        try {
-            const resp = await this.octokit.rest.pulls.update({
-                ...repo,
-                pull_number: issueNumber,
-                title: title,
-                body: body
-            });
-            core.debug(`Response for updating pull request ${issueNumber}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for updating pull request ${issueNumber}: ${resp.status}`);
+    updateIssue(repo, issueNumber, title, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.pulls.update(Object.assign(Object.assign({}, repo), { pull_number: issueNumber, title: title, body: body }));
+                core.debug(`Response for updating pull request ${issueNumber}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for updating pull request ${issueNumber}: ${resp.status}`);
+                }
             }
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for updating pull request ${issueNumber}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for updating pull request ${issueNumber}`);
+                throw error;
+            }
+        });
     }
-    async getComment(repo, commentId) {
-        try {
-            const resp = await this.octokit.rest.issues.getComment({
-                ...repo,
-                comment_id: commentId
-            });
-            core.debug(`Response for getting comment ${commentId}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for getting comment ${commentId}: ${resp.status}`);
+    getComment(repo, commentId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.issues.getComment(Object.assign(Object.assign({}, repo), { comment_id: commentId }));
+                core.debug(`Response for getting comment ${commentId}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for getting comment ${commentId}: ${resp.status}`);
+                }
+                return resp.data;
             }
-            return resp.data;
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for getting comment ${commentId}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for getting comment ${commentId}`);
+                throw error;
+            }
+        });
     }
-    async suffixComment(repo, commentId, oldBody, suffix) {
-        const newBody = oldBody + '\n' + suffix;
-        await this.updateComment(repo, commentId, newBody);
-        return newBody;
+    suffixComment(repo, commentId, oldBody, suffix) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const newBody = oldBody + '\n' + suffix;
+            yield this.updateComment(repo, commentId, newBody);
+            return newBody;
+        });
     }
-    async updateComment(repo, commentId, body) {
-        try {
-            const resp = await this.octokit.rest.issues.updateComment({
-                ...repo,
-                comment_id: commentId,
-                body: body
-            });
-            core.debug(`Response for updating comment ${commentId}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for updating comment ${commentId}: ${resp.status}`);
+    updateComment(repo, commentId, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.issues.updateComment(Object.assign(Object.assign({}, repo), { comment_id: commentId, body: body }));
+                core.debug(`Response for updating comment ${commentId}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for updating comment ${commentId}: ${resp.status}`);
+                }
             }
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for updating comment ${commentId}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for updating comment ${commentId}`);
+                throw error;
+            }
+        });
     }
-    async createWorkflowDispatch(repo, workflowId, ref) {
-        try {
-            const resp = await this.octokit.rest.actions.createWorkflowDispatch({
-                ...repo,
-                workflow_id: workflowId,
-                ref: ref
-            });
-            core.debug(`Response for creating workflow dispatch ${workflowId} on ref ${ref}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 204) {
-                throw new Error(`Response status for creating workflow dispatch ${workflowId} on ref ${ref}: ${resp.status}`);
+    createWorkflowDispatch(repo, workflowId, ref) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.actions.createWorkflowDispatch(Object.assign(Object.assign({}, repo), { workflow_id: workflowId, ref: ref }));
+                core.debug(`Response for creating workflow dispatch ${workflowId} on ref ${ref}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 204) {
+                    throw new Error(`Response status for creating workflow dispatch ${workflowId} on ref ${ref}: ${resp.status}`);
+                }
             }
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for creating workflow dispatch ${workflowId} on ref ${ref}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for creating workflow dispatch ${workflowId} on ref ${ref}`);
+                throw error;
+            }
+        });
     }
-    async getWorkflowRunId(repo, workflowId, event, createdAt) {
-        try {
-            core.debug('Get workflow run id');
-            const resp = await this.octokit.rest.actions.listWorkflowRuns({
-                ...repo,
-                workflow_id: workflowId,
-                event: event
-            });
-            core.debug(`Response for listing workflow run of workflow ${workflowId} event ${event}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for listing workflow run of workflow ${workflowId} event ${event}: ${resp.status}`);
+    getWorkflowRunId(repo, workflowId, event, createdAt) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                core.debug('Get workflow run id');
+                const resp = yield this.octokit.rest.actions.listWorkflowRuns(Object.assign(Object.assign({}, repo), { workflow_id: workflowId, event: event }));
+                core.debug(`Response for listing workflow run of workflow ${workflowId} event ${event}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for listing workflow run of workflow ${workflowId} event ${event}: ${resp.status}`);
+                }
+                const runs = resp.data.workflow_runs.filter(run => new Date(run.created_at).valueOf() >= createdAt);
+                core.debug(`Filtered workflow runs (after create time ${new Date(createdAt).toISOString()}): ${runs.map(run => ({
+                    id: run.id,
+                    name: run.name,
+                    created_at: run.created_at
+                }))}`);
+                if (runs.length == 0) {
+                    throw new Error('No workflow run found');
+                }
+                return runs[0].id;
             }
-            const runs = resp.data.workflow_runs.filter(run => new Date(run.created_at).valueOf() >= createdAt);
-            core.debug(`Filtered workflow runs (after create time ${new Date(createdAt).toISOString()}): ${runs.map(run => ({
-                id: run.id,
-                name: run.name,
-                created_at: run.created_at
-            }))}`);
-            if (runs.length == 0) {
-                throw new Error('No workflow run found');
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for getting workflow run of workflow ${workflowId} event ${event} after ${new Date(createdAt).toISOString()}`);
+                throw error;
             }
-            return runs[0].id;
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for getting workflow run of workflow ${workflowId} event ${event} after ${new Date(createdAt).toISOString()}`);
-            throw error;
-        }
+        });
     }
-    async getWorkflowRun(repo, runId) {
-        try {
-            const resp = await this.octokit.rest.actions.getWorkflowRun({
-                ...repo,
-                run_id: runId
-            });
-            core.debug(`Response for getting workflow run ${runId}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for workflow run ${runId}: ${resp.status}`);
+    getWorkflowRun(repo, runId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.actions.getWorkflowRun(Object.assign(Object.assign({}, repo), { run_id: runId }));
+                core.debug(`Response for getting workflow run ${runId}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for workflow run ${runId}: ${resp.status}`);
+                }
+                return resp.data;
             }
-            return resp.data;
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for workflow run ${runId}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for workflow run ${runId}`);
+                throw error;
+            }
+        });
     }
-    async createCommitStatus(repo, sha, name, state, description, target_url) {
-        try {
-            const resp = await this.octokit.rest.repos.createCommitStatus({
-                ...repo,
-                sha: sha,
-                context: name,
-                state: state,
-                description: description,
-                target_url: target_url
-            });
-            core.debug(`Response for updating commit status ${name} on SHA ${sha}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 201) {
-                throw new Error(`Response status for updating commit status ${name} on SHA ${sha}: ${resp.status}`);
+    createCommitStatus(repo, sha, name, state, description, target_url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.repos.createCommitStatus(Object.assign(Object.assign({}, repo), { sha: sha, context: name, state: state, description: description, target_url: target_url }));
+                core.debug(`Response for updating commit status ${name} on SHA ${sha}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 201) {
+                    throw new Error(`Response status for updating commit status ${name} on SHA ${sha}: ${resp.status}`);
+                }
             }
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for updating commit status ${name} on SHA ${sha}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for updating commit status ${name} on SHA ${sha}`);
+                throw error;
+            }
+        });
     }
-    async getCombinedCommitStatus(repo, ref) {
-        try {
-            const resp = await this.octokit.rest.repos.getCombinedStatusForRef({
-                ...repo,
-                ref: ref
-            });
-            core.debug(`Response for listing commit statuses on ref ${ref}: ${util_1.inspect(resp)}`);
-            if (resp.status !== 200) {
-                throw new Error(`Response status for listing commit statuses on ref ${ref}: ${resp.status}`);
+    getCombinedCommitStatus(repo, ref) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resp = yield this.octokit.rest.repos.getCombinedStatusForRef(Object.assign(Object.assign({}, repo), { ref: ref }));
+                core.debug(`Response for listing commit statuses on ref ${ref}: ${util_1.inspect(resp)}`);
+                if (resp.status !== 200) {
+                    throw new Error(`Response status for listing commit statuses on ref ${ref}: ${resp.status}`);
+                }
+                return resp.data;
             }
-            return resp.data;
-        }
-        catch (error) {
-            core.debug(error);
-            core.warning(`Failed for listing commit statuses on ref ${ref}`);
-            throw error;
-        }
+            catch (error) {
+                core.debug(error);
+                core.warning(`Failed for listing commit statuses on ref ${ref}`);
+                throw error;
+            }
+        });
     }
 }
 exports.GitHubHelper = GitHubHelper;
@@ -490,6 +470,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const github = __importStar(__nccwpck_require__(5438));
 const core = __importStar(__nccwpck_require__(2186));
@@ -497,297 +486,303 @@ const util_1 = __nccwpck_require__(1669);
 const inputs_helper_1 = __nccwpck_require__(7033);
 const commands_helper_1 = __nccwpck_require__(1439);
 const github_helper_1 = __nccwpck_require__(446);
-async function run() {
-    try {
-        const inputs = inputs_helper_1.getInputs();
-        if (!inputs.token) {
-            throw new Error(`Missing required input 'token'`);
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const inputs = inputs_helper_1.getInputs();
+            if (!inputs.token) {
+                throw new Error(`Missing required input 'token'`);
+            }
+            if (!inputs.config) {
+                throw new Error(`Missing required input 'config'`);
+            }
+            const commandsConfig = inputs_helper_1.getCommandsConfig(inputs);
+            core.debug(`Commands config: ${util_1.inspect(commandsConfig)}`);
+            const isValid = inputs_helper_1.configIsValid(commandsConfig);
+            if (!isValid) {
+                return;
+            }
+            const eventName = github.context.eventName;
+            const action = github.context.payload.action;
+            switch (eventName) {
+                case 'issue_comment':
+                    yield handleIssueComment(inputs.token, commandsConfig);
+                    break;
+                case 'workflow_run':
+                    if (action !== 'completed') {
+                        core.setFailed(`This action cannot be triggered on workflow_run event with action except 'completed'`);
+                        return;
+                    }
+                    yield handleWorkflowRun(inputs.token);
+                    break;
+                default:
+                    core.error(`Unsupported event name: ${eventName}`);
+            }
         }
-        if (!inputs.config) {
-            throw new Error(`Missing required input 'config'`);
+        catch (e) {
+            core.debug(util_1.inspect(e));
+            if (e instanceof Error) {
+                core.setFailed(e.message);
+            }
         }
-        const commandsConfig = inputs_helper_1.getCommandsConfig(inputs);
-        core.debug(`Commands config: ${util_1.inspect(commandsConfig)}`);
-        const isValid = inputs_helper_1.configIsValid(commandsConfig);
-        if (!isValid) {
+    });
+}
+function handleWorkflowRun(token) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const repo = github.context.repo;
+        const workflowRunPayload = github.context.payload;
+        const workflowRunId = workflowRunPayload.workflow_run.id;
+        const workflowName = workflowRunPayload.workflow.name;
+        const sha = workflowRunPayload.workflow_run.head_sha;
+        const helper = new github_helper_1.GitHubHelper(token);
+        const combinedStatus = yield helper.getCombinedCommitStatus(repo, sha);
+        const statuses = combinedStatus.statuses.filter(s => s.context === workflowName);
+        if (statuses.length === 0) {
+            core.info(`Cannot find status with context ${workflowName} on SHA ${sha} (head SHA for workflow run ${workflowRunId})`);
             return;
         }
-        const eventName = github.context.eventName;
-        const action = github.context.payload.action;
-        switch (eventName) {
-            case 'issue_comment':
-                await handleIssueComment(inputs.token, commandsConfig);
+        if (statuses.length > 1) {
+            core.setFailed(`Found more than 1 (actually ${statuses.length}) with context ${workflowName} on SHA ${sha} (head SHA for workflow run ${workflowRunId})`);
+            return;
+        }
+        const status = statuses[0];
+        const state = workflowRunPayload.workflow_run.conclusion === 'success'
+            ? 'success'
+            : 'failure';
+        let description = '';
+        switch (workflowRunPayload.workflow_run.conclusion) {
+            case 'success':
+                description = 'Workflow run have finished successfully';
                 break;
-            case 'workflow_run':
-                if (action !== 'completed') {
-                    core.setFailed(`This action cannot be triggered on workflow_run event with action except 'completed'`);
-                    return;
-                }
-                await handleWorkflowRun(inputs.token);
+            case 'failure':
+                description = 'Workflow run have finished with failure';
+                break;
+            case 'cancelled':
+                description = 'Workflow run have been canceled';
+                break;
+            case 'timed_out':
+                description = 'Workflow run have timed out';
+                break;
+            case 'stale':
+                description = 'Workflow run is stale';
+                break;
+            case 'action_required':
+                description = 'Workflow run have completed with action required';
                 break;
             default:
-                core.error(`Unsupported event name: ${eventName}`);
+                description = `Workflow run have completed with unrecognized conclusion ${workflowRunPayload.workflow_run.conclusion}`;
         }
-    }
-    catch (e) {
-        core.debug(util_1.inspect(e));
-        if (e instanceof Error) {
-            core.setFailed(e.message);
+        yield helper.createCommitStatus(repo, sha, workflowName, state, description, status.target_url);
+        const statusDescRegExp = /Workflow run was triggered by slash command in comment (\d+)/;
+        const matches = status.description.match(statusDescRegExp);
+        if (matches === null || matches.length < 2) {
+            core.info(`Cannot match status description for comment id, will skip updating comment`);
+            return;
         }
-    }
+        const commentIdStr = matches[1];
+        core.info(`Extracted comment ID string ${commentIdStr} from status description ${status.description}`);
+        const commentId = parseInt(commentIdStr);
+        const commentData = yield helper.getComment(repo, commentId);
+        yield helper.suffixComment(repo, commentId, commentData.body, `>Workflow run completed: run id = ${workflowRunId}, conclusion = ${workflowRunPayload.workflow_run.conclusion}`);
+    });
 }
-async function handleWorkflowRun(token) {
-    const repo = github.context.repo;
-    const workflowRunPayload = github.context.payload;
-    const workflowRunId = workflowRunPayload.workflow_run.id;
-    const workflowName = workflowRunPayload.workflow.name;
-    const sha = workflowRunPayload.workflow_run.head_sha;
-    const helper = new github_helper_1.GitHubHelper(token);
-    const combinedStatus = await helper.getCombinedCommitStatus(repo, sha);
-    const statuses = combinedStatus.statuses.filter(s => s.context === workflowName);
-    if (statuses.length === 0) {
-        core.info(`Cannot find status with context ${workflowName} on SHA ${sha} (head SHA for workflow run ${workflowRunId})`);
-        return;
-    }
-    if (statuses.length > 1) {
-        core.setFailed(`Found more than 1 (actually ${statuses.length}) with context ${workflowName} on SHA ${sha} (head SHA for workflow run ${workflowRunId})`);
-        return;
-    }
-    const status = statuses[0];
-    const state = workflowRunPayload.workflow_run.conclusion === 'success'
-        ? 'success'
-        : 'failure';
-    let description = '';
-    switch (workflowRunPayload.workflow_run.conclusion) {
-        case 'success':
-            description = 'Workflow run have finished successfully';
-            break;
-        case 'failure':
-            description = 'Workflow run have finished with failure';
-            break;
-        case 'cancelled':
-            description = 'Workflow run have been canceled';
-            break;
-        case 'timed_out':
-            description = 'Workflow run have timed out';
-            break;
-        case 'stale':
-            description = 'Workflow run is stale';
-            break;
-        case 'action_required':
-            description = 'Workflow run have completed with action required';
-            break;
-        default:
-            description = `Workflow run have completed with unrecognized conclusion ${workflowRunPayload.workflow_run.conclusion}`;
-    }
-    await helper.createCommitStatus(repo, sha, workflowName, state, description, status.target_url);
-    const statusDescRegExp = /Workflow run was triggered by slash command in comment (\d+)/;
-    const matches = status.description.match(statusDescRegExp);
-    if (matches === null || matches.length < 2) {
-        core.info(`Cannot match status description for comment id, will skip updating comment`);
-        return;
-    }
-    const commentIdStr = matches[1];
-    core.info(`Extracted comment ID string ${commentIdStr} from status description ${status.description}`);
-    const commentId = parseInt(commentIdStr);
-    const commentData = await helper.getComment(repo, commentId);
-    await helper.suffixComment(repo, commentId, commentData.body, `>Workflow run completed: run id = ${workflowRunId}, conclusion = ${workflowRunPayload.workflow_run.conclusion}`);
-}
-async function handleIssueComment(token, commandsConfig) {
-    const repo = github.context.repo;
-    const issueNumber = github.context.payload.issue.number;
-    let commentBody = github.context.payload.comment.body;
-    const commentId = github.context.payload.comment.id;
-    const isPullRequest = 'pull_request' in github.context.payload.issue;
-    const helper = new github_helper_1.GitHubHelper(token);
-    core.debug(`Repository: ${util_1.inspect(repo)}`);
-    core.debug(`Issue number: ${issueNumber}`);
-    core.debug(`Comment body: ${commentBody}`);
-    core.debug(`Comment id: ${commentId}`);
-    core.debug(`Is pull request: ${isPullRequest}`);
-    const firstLine = commentBody.split(/\r?\n/)[0].trim();
-    if (firstLine.length < 2 || firstLine.charAt(0) != '/') {
-        core.info(`The first line of the comment is not a valid slash command`);
-        return;
-    }
-    const commandTokens = commands_helper_1.tokeniseCommand(firstLine.slice(1));
-    core.debug(`Command tokens: ${util_1.inspect(commandTokens)}`);
-    // handle /help commands specially
-    if (commandTokens[0] === 'help') {
-        let helpMessage = '\n> Command | Description\n> --- | ---\n>/help | Show this help message in comment\n';
-        const commandMatches = commandsConfig.commands.filter(function (cmd) {
+function handleIssueComment(token, commandsConfig) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const repo = github.context.repo;
+        const issueNumber = github.context.payload.issue.number;
+        let commentBody = github.context.payload.comment.body;
+        const commentId = github.context.payload.comment.id;
+        const isPullRequest = 'pull_request' in github.context.payload.issue;
+        const helper = new github_helper_1.GitHubHelper(token);
+        core.debug(`Repository: ${util_1.inspect(repo)}`);
+        core.debug(`Issue number: ${issueNumber}`);
+        core.debug(`Comment body: ${commentBody}`);
+        core.debug(`Comment id: ${commentId}`);
+        core.debug(`Is pull request: ${isPullRequest}`);
+        const firstLine = commentBody.split(/\r?\n/)[0].trim();
+        if (firstLine.length < 2 || firstLine.charAt(0) != '/') {
+            core.info(`The first line of the comment is not a valid slash command`);
+            return;
+        }
+        const commandTokens = commands_helper_1.tokeniseCommand(firstLine.slice(1));
+        core.debug(`Command tokens: ${util_1.inspect(commandTokens)}`);
+        // handle /help commands specially
+        if (commandTokens[0] === 'help') {
+            let helpMessage = '\n> Command | Description\n> --- | ---\n>/help | Show this help message in comment\n';
+            const commandMatches = commandsConfig.commands.filter(function (cmd) {
+                return (cmd.issue_type == 'both' ||
+                    (cmd.issue_type == 'issue' && !isPullRequest) ||
+                    (cmd.issue_type == 'pull_request' && isPullRequest));
+            });
+            for (const cmd of commandMatches) {
+                helpMessage = helpMessage + `> /${cmd.name} ${cmd.usage} | ${cmd.help}\n`;
+            }
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, helpMessage);
+            return;
+        }
+        // Check if the command is registered for dispatch
+        let commandMatches = commandsConfig.commands.filter(function (cmd) {
+            return cmd.enable && cmd.name === commandTokens[0];
+        });
+        core.debug(`Command matches on 'enable' and 'name': ${util_1.inspect(commandMatches)}`);
+        if (commandMatches.length === 0) {
+            core.info(`Command '${commandTokens[0]}' is not registered for dispatch`);
+            return;
+        }
+        // Filter matching commands by issue type
+        commandMatches = commandMatches.filter(function (cmd) {
             return (cmd.issue_type == 'both' ||
                 (cmd.issue_type == 'issue' && !isPullRequest) ||
                 (cmd.issue_type == 'pull_request' && isPullRequest));
         });
-        for (const cmd of commandMatches) {
-            helpMessage = helpMessage + `> /${cmd.name} ${cmd.usage} | ${cmd.help}\n`;
-        }
-        commentBody = await helper.suffixComment(repo, commentId, commentBody, helpMessage);
-        return;
-    }
-    // Check if the command is registered for dispatch
-    let commandMatches = commandsConfig.commands.filter(function (cmd) {
-        return cmd.enable && cmd.name === commandTokens[0];
-    });
-    core.debug(`Command matches on 'enable' and 'name': ${util_1.inspect(commandMatches)}`);
-    if (commandMatches.length === 0) {
-        core.info(`Command '${commandTokens[0]}' is not registered for dispatch`);
-        return;
-    }
-    // Filter matching commands by issue type
-    commandMatches = commandMatches.filter(function (cmd) {
-        return (cmd.issue_type == 'both' ||
-            (cmd.issue_type == 'issue' && !isPullRequest) ||
-            (cmd.issue_type == 'pull_request' && isPullRequest));
-    });
-    core.debug(`Command matches on 'issue_type': ${util_1.inspect(commandMatches)}`);
-    if (commandMatches.length === 0) {
-        const issueType = isPullRequest ? 'pull request' : 'issue';
-        core.info(`Command ${commandTokens[0]} is not configured for the issue type ${issueType}`);
-        return;
-    }
-    // Filter matching commands by whether or not to allow edits
-    // if (github.context.payload.action === 'edited') {
-    //   commandMatches = commandMatches.filter(function (cmd: Command) {
-    //     return cmd.allow_edits
-    //   })
-    //   core.debug(`Command matches on 'allow_edits': ${inspect(commandMatches)}`)
-    //   if (commandMatches.length === 0) {
-    //     core.info(`Command ${commandTokens[0]} is not configured to allow edits`)
-    //     return
-    //   }
-    // }
-    // At this point we know the command is correctly registerd, add the "eyes" reaction to the comment
-    if (commandsConfig.use_reaction) {
-        await helper.addReaction(repo, commentId, 'eyes');
-    }
-    // Filter matching commands by actor's permission level
-    const actorPermission = await helper.getPermission(repo, github.context.actor);
-    core.debug(`Actor ${github.context.actor} permission: ${actorPermission}`);
-    commandMatches = commandMatches.filter(function (cmd) {
-        return helper.containPermission(actorPermission, cmd.permission);
-    });
-    core.debug(`Commands matches on 'permission': ${util_1.inspect(commandMatches)}`);
-    if (commandMatches.length === 0) {
-        core.info(`Command ${commandTokens[0]} is not configured for the user permission level ${actorPermission}`);
-        return;
-    }
-    // Assert there is only 1 commands matched in the end
-    if (commandMatches.length > 1) {
-        throw new Error(`More than 1 commands matched, maybe the configuration is wrong`);
-    }
-    const cmd = commandMatches[0];
-    const args = commandTokens.slice(1);
-    // Check number of arguments
-    if (commandTokens.length - 1 !== cmd.args) {
-        throw new Error(`Required number of argument for command ${cmd.name} is ${cmd.args}, found ${commandTokens.length - 1}`);
-    }
-    if (cmd.label_format) {
-        const label = commands_helper_1.formatWithArguments(cmd.label_format, args);
-        await helper.addLabel(repo, issueNumber, label);
-        commentBody = await helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): added label ${label}`);
-    }
-    if (cmd.unlabel_format) {
-        const label = commands_helper_1.formatWithArguments(cmd.unlabel_format, args);
-        await helper.removeLabel(repo, issueNumber, label);
-        commentBody = await helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): removed label ${label}`);
-    }
-    if (cmd.assignee_format) {
-        const assignee = commands_helper_1.formatWithArguments(cmd.assignee_format, args);
-        await helper.addAssignee(repo, issueNumber, assignee);
-        commentBody = await helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): added assignee ${assignee}`);
-    }
-    if (cmd.unassignee_format) {
-        const assignee = commands_helper_1.formatWithArguments(cmd.unassignee_format, args);
-        await helper.removeAssignee(repo, issueNumber, assignee);
-        commentBody = await helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): removed assignee ${assignee}`);
-    }
-    if (cmd.request_reviewer_format) {
-        const reviewer = commands_helper_1.formatWithArguments(cmd.request_reviewer_format, args);
-        await helper.addReviewer(repo, issueNumber, reviewer);
-        commentBody = await helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): added reviewer ${reviewer}`);
-    }
-    if (cmd.unrequest_reviewer_format) {
-        const reviewer = commands_helper_1.formatWithArguments(cmd.unrequest_reviewer_format, args);
-        await helper.removeReviewer(repo, issueNumber, reviewer);
-        commentBody = await helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): removed reviewer ${reviewer}`);
-    }
-    if (cmd.prefix_issue_title_format ||
-        cmd.suffix_issue_title_format ||
-        cmd.remove_issue_title_format ||
-        cmd.replace_issue_title_format ||
-        cmd.prefix_issue_body_format ||
-        cmd.suffix_issue_body_format ||
-        cmd.remove_issue_body_format ||
-        cmd.replace_issue_body_format) {
-        const issue = await helper.getIssue(repo, issueNumber);
-        const numberOfTitleUpdates = [
-            cmd.prefix_issue_title_format,
-            cmd.suffix_issue_title_format,
-            cmd.remove_issue_title_format,
-            cmd.replace_issue_title_format
-        ].filter(v => v).length;
-        const numberOfBodyUpdates = [
-            cmd.prefix_issue_body_format,
-            cmd.suffix_issue_body_format,
-            cmd.remove_issue_body_format,
-            cmd.replace_issue_title_format
-        ].filter(v => v).length;
-        if (numberOfTitleUpdates > 1) {
-            core.setFailed(`configured more than 1 issue title updates in command ${cmd.name}`);
+        core.debug(`Command matches on 'issue_type': ${util_1.inspect(commandMatches)}`);
+        if (commandMatches.length === 0) {
+            const issueType = isPullRequest ? 'pull request' : 'issue';
+            core.info(`Command ${commandTokens[0]} is not configured for the issue type ${issueType}`);
             return;
         }
-        if (numberOfBodyUpdates > 1) {
-            core.setFailed(`configured more than 1 issue body updates in command ${cmd.name}`);
+        // Filter matching commands by whether or not to allow edits
+        // if (github.context.payload.action === 'edited') {
+        //   commandMatches = commandMatches.filter(function (cmd: Command) {
+        //     return cmd.allow_edits
+        //   })
+        //   core.debug(`Command matches on 'allow_edits': ${inspect(commandMatches)}`)
+        //   if (commandMatches.length === 0) {
+        //     core.info(`Command ${commandTokens[0]} is not configured to allow edits`)
+        //     return
+        //   }
+        // }
+        // At this point we know the command is correctly registerd, add the "eyes" reaction to the comment
+        if (commandsConfig.use_reaction) {
+            yield helper.addReaction(repo, commentId, 'eyes');
+        }
+        // Filter matching commands by actor's permission level
+        const actorPermission = yield helper.getPermission(repo, github.context.actor);
+        core.debug(`Actor ${github.context.actor} permission: ${actorPermission}`);
+        commandMatches = commandMatches.filter(function (cmd) {
+            return helper.containPermission(actorPermission, cmd.permission);
+        });
+        core.debug(`Commands matches on 'permission': ${util_1.inspect(commandMatches)}`);
+        if (commandMatches.length === 0) {
+            core.info(`Command ${commandTokens[0]} is not configured for the user permission level ${actorPermission}`);
             return;
         }
-        let title = issue.title;
-        if (cmd.prefix_issue_title_format) {
-            title =
-                commands_helper_1.formatWithArguments(cmd.prefix_issue_title_format, args) + ' ' + title;
+        // Assert there is only 1 commands matched in the end
+        if (commandMatches.length > 1) {
+            throw new Error(`More than 1 commands matched, maybe the configuration is wrong`);
         }
-        if (cmd.suffix_issue_title_format) {
-            title =
-                title + ' ' + commands_helper_1.formatWithArguments(cmd.suffix_issue_title_format, args);
+        const cmd = commandMatches[0];
+        const args = commandTokens.slice(1);
+        // Check number of arguments
+        if (commandTokens.length - 1 !== cmd.args) {
+            throw new Error(`Required number of argument for command ${cmd.name} is ${cmd.args}, found ${commandTokens.length - 1}`);
         }
-        if (cmd.remove_issue_title_format) {
-            title = title.replaceAll(commands_helper_1.formatWithArguments(cmd.remove_issue_title_format, args), '');
+        if (cmd.label_format) {
+            const label = commands_helper_1.formatWithArguments(cmd.label_format, args);
+            yield helper.addLabel(repo, issueNumber, label);
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): added label ${label}`);
         }
-        if (cmd.replace_issue_title_format) {
-            title = commands_helper_1.formatWithArguments(cmd.replace_issue_title_format, args);
+        if (cmd.unlabel_format) {
+            const label = commands_helper_1.formatWithArguments(cmd.unlabel_format, args);
+            yield helper.removeLabel(repo, issueNumber, label);
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): removed label ${label}`);
         }
-        let body = issue.body;
-        if (cmd.prefix_issue_body_format) {
-            body =
-                commands_helper_1.formatWithArguments(cmd.prefix_issue_body_format, args) + '\n' + body;
+        if (cmd.assignee_format) {
+            const assignee = commands_helper_1.formatWithArguments(cmd.assignee_format, args);
+            yield helper.addAssignee(repo, issueNumber, assignee);
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): added assignee ${assignee}`);
         }
-        if (cmd.suffix_issue_body_format) {
-            body =
-                body + '\n' + commands_helper_1.formatWithArguments(cmd.suffix_issue_body_format, args);
+        if (cmd.unassignee_format) {
+            const assignee = commands_helper_1.formatWithArguments(cmd.unassignee_format, args);
+            yield helper.removeAssignee(repo, issueNumber, assignee);
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): removed assignee ${assignee}`);
         }
-        if (cmd.remove_issue_body_format) {
-            body = body.replaceAll(commands_helper_1.formatWithArguments(cmd.remove_issue_body_format, args), '');
+        if (cmd.request_reviewer_format) {
+            const reviewer = commands_helper_1.formatWithArguments(cmd.request_reviewer_format, args);
+            yield helper.addReviewer(repo, issueNumber, reviewer);
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): added reviewer ${reviewer}`);
         }
-        if (cmd.replace_issue_body_format) {
-            body = commands_helper_1.formatWithArguments(cmd.replace_issue_body_format, args);
+        if (cmd.unrequest_reviewer_format) {
+            const reviewer = commands_helper_1.formatWithArguments(cmd.unrequest_reviewer_format, args);
+            yield helper.removeReviewer(repo, issueNumber, reviewer);
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): removed reviewer ${reviewer}`);
         }
-        title = title.trim();
-        body = body.trim();
-        await helper.updateIssue(repo, issueNumber, title, body);
-        commentBody = await helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): updated issue ${issueNumber}`);
-    }
-    if (cmd.workflow_name_format) {
-        const pullData = await helper.getPull(repo, issueNumber);
-        const ref = pullData.head.ref;
-        const workflowName = commands_helper_1.formatWithArguments(cmd.workflow_name_format, args);
-        const triggerDate = Date.now();
-        await helper.createWorkflowDispatch(repo, workflowName, ref);
-        const workflowRunId = await helper.getWorkflowRunId(repo, workflowName, 'workflow_dispatch', triggerDate);
-        const workflowRun = await helper.getWorkflowRun(repo, workflowRunId);
-        commentBody = await helper.suffixComment(repo, commentId, commentBody, `>Workflow run started: name = ${workflowName}, ref = ${ref}\n>View workflow run at: ${workflowRun.html_url}`);
-        await helper.createCommitStatus(repo, pullData.head.sha, workflowName, 'pending', `Workflow run was triggered by slash command in comment ${commentId}`, workflowRun.html_url);
-    }
+        if (cmd.prefix_issue_title_format ||
+            cmd.suffix_issue_title_format ||
+            cmd.remove_issue_title_format ||
+            cmd.replace_issue_title_format ||
+            cmd.prefix_issue_body_format ||
+            cmd.suffix_issue_body_format ||
+            cmd.remove_issue_body_format ||
+            cmd.replace_issue_body_format) {
+            const issue = yield helper.getIssue(repo, issueNumber);
+            const numberOfTitleUpdates = [
+                cmd.prefix_issue_title_format,
+                cmd.suffix_issue_title_format,
+                cmd.remove_issue_title_format,
+                cmd.replace_issue_title_format
+            ].filter(v => v).length;
+            const numberOfBodyUpdates = [
+                cmd.prefix_issue_body_format,
+                cmd.suffix_issue_body_format,
+                cmd.remove_issue_body_format,
+                cmd.replace_issue_title_format
+            ].filter(v => v).length;
+            if (numberOfTitleUpdates > 1) {
+                core.setFailed(`configured more than 1 issue title updates in command ${cmd.name}`);
+                return;
+            }
+            if (numberOfBodyUpdates > 1) {
+                core.setFailed(`configured more than 1 issue body updates in command ${cmd.name}`);
+                return;
+            }
+            let title = issue.title;
+            if (cmd.prefix_issue_title_format) {
+                title =
+                    commands_helper_1.formatWithArguments(cmd.prefix_issue_title_format, args) + ' ' + title;
+            }
+            if (cmd.suffix_issue_title_format) {
+                title =
+                    title + ' ' + commands_helper_1.formatWithArguments(cmd.suffix_issue_title_format, args);
+            }
+            if (cmd.remove_issue_title_format) {
+                title = title.replaceAll(commands_helper_1.formatWithArguments(cmd.remove_issue_title_format, args), '');
+            }
+            if (cmd.replace_issue_title_format) {
+                title = commands_helper_1.formatWithArguments(cmd.replace_issue_title_format, args);
+            }
+            let body = issue.body;
+            if (cmd.prefix_issue_body_format) {
+                body =
+                    commands_helper_1.formatWithArguments(cmd.prefix_issue_body_format, args) + '\n' + body;
+            }
+            if (cmd.suffix_issue_body_format) {
+                body =
+                    body + '\n' + commands_helper_1.formatWithArguments(cmd.suffix_issue_body_format, args);
+            }
+            if (cmd.remove_issue_body_format) {
+                body = body.replaceAll(commands_helper_1.formatWithArguments(cmd.remove_issue_body_format, args), '');
+            }
+            if (cmd.replace_issue_body_format) {
+                body = commands_helper_1.formatWithArguments(cmd.replace_issue_body_format, args);
+            }
+            title = title.trim();
+            body = body.trim();
+            yield helper.updateIssue(repo, issueNumber, title, body);
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): updated issue ${issueNumber}`);
+        }
+        if (cmd.workflow_name_format) {
+            const pullData = yield helper.getPull(repo, issueNumber);
+            const ref = pullData.head.ref;
+            const workflowName = commands_helper_1.formatWithArguments(cmd.workflow_name_format, args);
+            const triggerDate = Date.now();
+            yield helper.createWorkflowDispatch(repo, workflowName, ref);
+            const workflowRunId = yield helper.getWorkflowRunId(repo, workflowName, 'workflow_dispatch', triggerDate);
+            const workflowRun = yield helper.getWorkflowRun(repo, workflowRunId);
+            commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>Workflow run started: name = ${workflowName}, ref = ${ref}\n>View workflow run at: ${workflowRun.html_url}`);
+            yield helper.createCommitStatus(repo, pullData.head.sha, workflowName, 'pending', `Workflow run was triggered by slash command in comment ${commentId}`, workflowRun.html_url);
+        }
+    });
 }
 run();
 
@@ -834,36 +829,37 @@ function getInputs() {
 }
 exports.getInputs = getInputs;
 function getCommandsConfig(inputs) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
     const yamlConfig = yaml_1.default.parse(inputs.config);
     core.debug(`YAML config: ${util_1.inspect(yamlConfig)}`);
     const commandsConfig = {
-        use_reaction: yamlConfig.use_reaction ?? true,
+        use_reaction: (_a = yamlConfig.use_reaction) !== null && _a !== void 0 ? _a : true,
         commands: []
     };
     for (const jc of yamlConfig.commands) {
         const cmd = {
-            enable: jc.enable ?? true,
-            name: jc.name ?? '',
-            usage: jc.usage ?? '',
-            help: jc.help ?? '',
-            args: jc.args ?? 0,
-            issue_type: jc.issue_type ?? 'issue',
-            permission: jc.permission ?? 'read',
-            label_format: jc.label_format ?? null,
-            unlabel_format: jc.unlabel_format ?? null,
-            assignee_format: jc.assignee_format ?? null,
-            unassignee_format: jc.unassignee_format ?? null,
-            request_reviewer_format: jc.request_reviewer_format ?? null,
-            unrequest_reviewer_format: jc.unrequest_reviewer_format ?? null,
-            prefix_issue_title_format: jc.prefix_issue_title_format ?? null,
-            suffix_issue_title_format: jc.suffix_issue_title_format ?? null,
-            remove_issue_title_format: jc.remove_issue_title_format ?? null,
-            replace_issue_title_format: jc.replace_issue_title_format ?? null,
-            prefix_issue_body_format: jc.prefix_issue_body_format ?? null,
-            suffix_issue_body_format: jc.suffix_issue_body_format ?? null,
-            remove_issue_body_format: jc.remove_issue_body_format ?? null,
-            replace_issue_body_format: jc.replace_issue_body_format ?? null,
-            workflow_name_format: jc.workflow_name_format ?? null
+            enable: (_b = jc.enable) !== null && _b !== void 0 ? _b : true,
+            name: (_c = jc.name) !== null && _c !== void 0 ? _c : '',
+            usage: (_d = jc.usage) !== null && _d !== void 0 ? _d : '',
+            help: (_e = jc.help) !== null && _e !== void 0 ? _e : '',
+            args: (_f = jc.args) !== null && _f !== void 0 ? _f : 0,
+            issue_type: (_g = jc.issue_type) !== null && _g !== void 0 ? _g : 'issue',
+            permission: (_h = jc.permission) !== null && _h !== void 0 ? _h : 'read',
+            label_format: (_j = jc.label_format) !== null && _j !== void 0 ? _j : null,
+            unlabel_format: (_k = jc.unlabel_format) !== null && _k !== void 0 ? _k : null,
+            assignee_format: (_l = jc.assignee_format) !== null && _l !== void 0 ? _l : null,
+            unassignee_format: (_m = jc.unassignee_format) !== null && _m !== void 0 ? _m : null,
+            request_reviewer_format: (_o = jc.request_reviewer_format) !== null && _o !== void 0 ? _o : null,
+            unrequest_reviewer_format: (_p = jc.unrequest_reviewer_format) !== null && _p !== void 0 ? _p : null,
+            prefix_issue_title_format: (_q = jc.prefix_issue_title_format) !== null && _q !== void 0 ? _q : null,
+            suffix_issue_title_format: (_r = jc.suffix_issue_title_format) !== null && _r !== void 0 ? _r : null,
+            remove_issue_title_format: (_s = jc.remove_issue_title_format) !== null && _s !== void 0 ? _s : null,
+            replace_issue_title_format: (_t = jc.replace_issue_title_format) !== null && _t !== void 0 ? _t : null,
+            prefix_issue_body_format: (_u = jc.prefix_issue_body_format) !== null && _u !== void 0 ? _u : null,
+            suffix_issue_body_format: (_v = jc.suffix_issue_body_format) !== null && _v !== void 0 ? _v : null,
+            remove_issue_body_format: (_w = jc.remove_issue_body_format) !== null && _w !== void 0 ? _w : null,
+            replace_issue_body_format: (_x = jc.replace_issue_body_format) !== null && _x !== void 0 ? _x : null,
+            workflow_name_format: (_y = jc.workflow_name_format) !== null && _y !== void 0 ? _y : null
         };
         commandsConfig.commands.push(cmd);
     }
