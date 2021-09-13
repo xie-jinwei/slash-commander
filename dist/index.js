@@ -607,7 +607,7 @@ function handleIssueComment(token, commandsConfig) {
         core.debug(`Command tokens: ${util_1.inspect(commandTokens)}`);
         // handle /help commands specially
         if (commandTokens[0] === 'help') {
-            let helpMessage = '\n> Command | Description\n> --- | ---\n';
+            let helpMessage = '\n> Command | Description\n> --- | ---\n>/help | Show this help message in comment\n';
             const commandMatches = commandsConfig.commands.filter(function (cmd) {
                 return (cmd.issue_type == 'both' ||
                     (cmd.issue_type == 'issue' && !isPullRequest) ||
@@ -765,6 +765,8 @@ function handleIssueComment(token, commandsConfig) {
             if (cmd.replace_issue_body_format) {
                 body = commands_helper_1.formatWithArguments(cmd.replace_issue_body_format, args);
             }
+            title = title.trim();
+            body = body.trim();
             yield helper.updateIssue(repo, issueNumber, title, body);
             commentBody = yield helper.suffixComment(repo, commentId, commentBody, `>github-actions(bot): updated issue ${issueNumber}`);
         }
@@ -869,7 +871,7 @@ function configIsValid(config) {
             core.setFailed(`command name is empty`);
             return false;
         }
-        if (cmd.usage === '') {
+        if (cmd.usage === null) {
             core.setFailed(`command usage is empty`);
             return false;
         }
